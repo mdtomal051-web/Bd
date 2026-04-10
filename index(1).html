@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Money - UddoktaPay</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .payment-card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 350px; }
+        .payment-card h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; color: #666; font-size: 14px; }
+        .input-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        .pay-btn { width: 100%; padding: 12px; background-color: #007bff; border: none; color: #fff; font-size: 16px; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+        .pay-btn:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="payment-card">
+    <h2>Deposit Money</h2>
+    
+    <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" id="name" placeholder="Enter your name">
+    </div>
+
+    <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" id="email" placeholder="Enter your email">
+    </div>
+
+    <div class="input-group">
+        <label>Amount (BDT)</label>
+        <input type="number" id="amount" placeholder="Minimum 10 TK">
+    </div>
+
+    <button class="pay-btn" onclick="initiatePayment()">Pay Now</button>
+</div>
+
+<script>
+    async function initiatePayment() {
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const amount = document.getElementById('amount').value;
+
+        if(!name || !email || !amount) {
+            alert("Please fill all fields!");
+            return;
+        }
+
+        // UddoktaPay API Integration Logic
+        // নোট: সিকিউরিটির জন্য API Key সরাসরি এখানে রাখা ঠিক নয়, এটি সার্ভার সাইড (PHP/NodeJS) থেকে কল করা ভালো।
+        
+        try {
+            const response = await fetch('https://YOUR_PANEL_URL/api/checkout-v2', {
+                method: 'POST',
+                headers: {
+                    'RT-UDDOKTAPAY-API-KEY': 'YOUR_API_KEY_HERE',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    full_name: name,
+                    email: email,
+                    amount: amount,
+                    metadata: {
+                        user_id: "12345" // আপনার Firebase User ID এখানে দিন
+                    },
+                    redirect_url: "https://your-site.com/success",
+                    return_url: "https://your-site.com/cancel",
+                    cancel_url: "https://your-site.com/cancel"
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.payment_url) {
+                // ইউজারকে UddoktaPay এর পেমেন্ট পেজে নিয়ে যাবে
+                window.location.href = data.payment_url;
+            } else {
+                alert("Payment initiation failed! Check Console.");
+                console.log(data);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Something went wrong!");
+        }
+    }
+</script>
+
+</body>
+</html>
